@@ -1,0 +1,1 @@
+# denopskaston.vim
