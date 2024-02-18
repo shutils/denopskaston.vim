@@ -9,6 +9,7 @@ export * as option from "https://deno.land/x/denops_std@v6.0.1/option/mod.ts";
 export * as vars from "https://deno.land/x/denops_std@v6.0.1/variable/mod.ts";
 
 export * as unknownutil from "https://deno.land/x/unknownutil@v3.16.1/mod.ts";
+export * as path from "https://deno.land/std@0.216.0/path/mod.ts";
 
 export {
   type ActionArguments,

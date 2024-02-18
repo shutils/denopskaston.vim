@@ -1,4 +1,10 @@
-import { BaseSource, GatherArguments, Item, unknownutil as u } from "./deps.ts";
+import {
+  BaseSource,
+  GatherArguments,
+  Item,
+  path,
+  unknownutil as u,
+} from "./deps.ts";
 
 import { ActionData, isRgJsonMatch, Note } from "./types.ts";
 
@@ -20,14 +26,17 @@ function getNotes(vault: string) {
       .filter((line) => line.length > 0);
     notePaths.map((notePath) => {
       const title = getNoteTitle(notePath);
+      const name = path.basename(notePath);
       if (title !== "") {
         notes.push({
-          title: title,
+          title,
           path: notePath,
+          name,
         });
       } else {
         notes.push({
           path: notePath,
+          name,
         });
       }
     });
@@ -51,15 +60,19 @@ function getNotesWithTag(vault: string, tag: string) {
     const notes: Note[] = [];
     rgJsons.map((rgJson) => {
       if (rgJson.type === "match") {
-        const title = getNoteTitle(rgJson.data.path.text);
+        const notePath = rgJson.data.path.text;
+        const title = getNoteTitle(notePath);
+        const name = path.basename(notePath);
         if (title !== "") {
           notes.push({
-            title: title,
-            path: rgJson.data.path.text,
+            title,
+            path: notePath,
+            name,
           });
         } else {
           notes.push({
-            path: rgJson.data.path.text,
+            path: notePath,
+            name,
           });
         }
       }
@@ -117,7 +130,7 @@ export class Source extends BaseSource<Params> {
         const items: Item<ActionData>[] = [];
         notes.map((note) => {
           items.push({
-            word: `${note.title ?? note.path}`,
+            word: `${note.name} | ${note.title ?? note.path}`,
             action: {
               cmd: "rg",
               path: note.path,
