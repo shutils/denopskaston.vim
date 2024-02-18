@@ -27,18 +27,18 @@ function getNotes(vault: string) {
     notePaths.map((notePath) => {
       const title = getNoteTitle(notePath);
       const name = path.basename(notePath);
+      let note: Note = {
+        path: notePath,
+        name,
+        relativePath: path.relative(vault, notePath),
+      };
       if (title !== "") {
-        notes.push({
+        note = {
+          ...note,
           title,
-          path: notePath,
-          name,
-        });
-      } else {
-        notes.push({
-          path: notePath,
-          name,
-        });
+        };
       }
+      notes.push(note);
     });
     return notes;
   }
@@ -63,18 +63,18 @@ function getNotesWithTag(vault: string, tag: string) {
         const notePath = rgJson.data.path.text;
         const title = getNoteTitle(notePath);
         const name = path.basename(notePath);
+        let note: Note = {
+          path: notePath,
+          name,
+          relativePath: path.relative(vault, notePath),
+        };
         if (title !== "") {
-          notes.push({
+          note = {
+            ...note,
             title,
-            path: notePath,
-            name,
-          });
-        } else {
-          notes.push({
-            path: notePath,
-            name,
-          });
+          };
         }
+        notes.push(note);
       }
     });
     return notes;
@@ -130,7 +130,7 @@ export class Source extends BaseSource<Params> {
         const items: Item<ActionData>[] = [];
         notes.map((note) => {
           items.push({
-            word: `${note.name} | ${note.title ?? note.path}`,
+            word: `${note.relativePath} | ${note.title ?? note.path}`,
             action: {
               cmd: "rg",
               path: note.path,

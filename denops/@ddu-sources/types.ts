@@ -46,4 +46,5 @@ export type Note = {
   title?: string;
   path: string;
   name: string;
+  relativePath: string;
 };
