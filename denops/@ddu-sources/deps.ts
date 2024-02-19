@@ -16,6 +16,7 @@ export {
   ActionFlags,
   type Actions,
   BaseSource,
+  type DduItem,
   type Item,
 } from "https://deno.land/x/ddu_vim@v3.10.2/types.ts";
 

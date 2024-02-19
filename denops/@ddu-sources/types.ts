@@ -1,5 +1,12 @@
 import { unknownutil as u } from "./deps.ts";
 
+export const isNote = u.isObjectOf({
+  title: u.isOptionalOf(u.isString),
+  path: u.isString,
+  name: u.isString,
+  vault: u.isString,
+});
+
 export const isRgJsonMatch = u.isObjectOf({
   type: u.isString,
   data: u.isObjectOf({
@@ -25,26 +32,4 @@ export const isRgJsonMatch = u.isObjectOf({
   ...u.isUnknown,
 });
 
-export const isActionData = u.isObjectOf({
-  cmd: u.isString,
-  path: u.isString,
-  lineNr: u.isNumber,
-  name: u.isString,
-  desc: u.isString,
-  summary: u.isString,
-  up_to_date: u.isBoolean,
-  location: u.isObjectOf({
-    line: u.isNumber,
-    column: u.isNumber,
-    taskfile: u.isString,
-  }),
-});
-
-export type ActionData = u.PredicateType<typeof isActionData>;
-
-export type Note = {
-  title?: string;
-  path: string;
-  name: string;
-  relativePath: string;
-};
+export type Note = u.PredicateType<typeof isNote>;

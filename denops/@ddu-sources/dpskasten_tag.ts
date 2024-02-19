@@ -8,11 +8,28 @@ import {
   unknownutil as u,
 } from "./deps.ts";
 
-import { ActionData, isActionData, isRgJsonMatch } from "./types.ts";
+import { isRgJsonMatch } from "./types.ts";
 
 type Params = {
   kind: string;
 };
+
+export const isActionData = u.isObjectOf({
+  cmd: u.isString,
+  path: u.isString,
+  lineNr: u.isNumber,
+  name: u.isString,
+  desc: u.isString,
+  summary: u.isString,
+  up_to_date: u.isBoolean,
+  location: u.isObjectOf({
+    line: u.isNumber,
+    column: u.isNumber,
+    taskfile: u.isString,
+  }),
+});
+
+export type ActionData = u.PredicateType<typeof isActionData>;
 
 const getTags = (vault: string): string[] => {
   const regex = /\[(.+?)\]/;

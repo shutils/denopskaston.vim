@@ -1,12 +1,35 @@
 import {
+  ActionArguments,
+  ActionFlags,
+  Actions,
   BaseSource,
+  fn,
   GatherArguments,
   Item,
   path,
   unknownutil as u,
 } from "./deps.ts";
 
-import { ActionData, isRgJsonMatch, Note } from "./types.ts";
+import { isNote, isRgJsonMatch, Note } from "./types.ts";
+import { paste } from "./util.ts";
+
+export const isActionData = u.isObjectOf({
+  cmd: u.isString,
+  path: u.isString,
+  lineNr: u.isNumber,
+  name: u.isString,
+  desc: u.isString,
+  summary: u.isString,
+  up_to_date: u.isBoolean,
+  note: isNote,
+  location: u.isObjectOf({
+    line: u.isNumber,
+    column: u.isNumber,
+    taskfile: u.isString,
+  }),
+});
+
+export type ActionData = u.PredicateType<typeof isActionData>;
 
 type Params = {
   tag?: string;
@@ -30,7 +53,7 @@ function getNotes(vault: string) {
       let note: Note = {
         path: notePath,
         name,
-        relativePath: path.relative(vault, notePath),
+        vault,
       };
       if (title !== "") {
         note = {
@@ -66,7 +89,7 @@ function getNotesWithTag(vault: string, tag: string) {
         let note: Note = {
           path: notePath,
           name,
-          relativePath: path.relative(vault, notePath),
+          vault,
         };
         if (title !== "") {
           note = {
@@ -129,8 +152,9 @@ export class Source extends BaseSource<Params> {
         }
         const items: Item<ActionData>[] = [];
         notes.map((note) => {
+          const relativePath = path.relative(vault, note.path);
           items.push({
-            word: `${note.relativePath} | ${note.title ?? note.path}`,
+            word: `${relativePath} | ${note.title ?? note.path}`,
             action: {
               cmd: "rg",
               path: note.path,
@@ -138,6 +162,7 @@ export class Source extends BaseSource<Params> {
               name: note.path,
               desc: "",
               summary: "",
+              note,
               up_to_date: true,
               location: {
                 line: 0,
@@ -152,6 +177,28 @@ export class Source extends BaseSource<Params> {
       },
     });
   }
+
+  override actions: Actions<Params> = {
+    async appendLink(args: ActionArguments<Params>) {
+      for (const item of args.items) {
+        if (item.action) {
+          const action = item?.action as ActionData;
+          let linkPath: string;
+          const currentFilePath = await fn.expand(args.denops, "%:p") as string;
+          const currentFileDir = path.dirname(currentFilePath);
+          const noteDir = path.dirname(action.note.path);
+          if (currentFileDir === noteDir) {
+            linkPath = path.basename(action.note.path);
+          } else {
+            linkPath = path.relative(currentFileDir, action.note.path);
+          }
+          const link = `[${action.note.title ?? "No title"}](${linkPath})`;
+          await paste(args.denops, args.context.mode, link, "p");
+        }
+      }
+      return ActionFlags.None;
+    },
+  };
 
   override params(): Params {
     return {};
